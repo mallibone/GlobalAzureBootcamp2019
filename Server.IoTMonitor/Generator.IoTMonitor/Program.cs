@@ -21,18 +21,15 @@ namespace Generator.IoTMonitor
 
             Console.WriteLine("Starting simulated measurement device, press enter to exit.");
             var cts = new CancellationTokenSource();
-            var generatorTask = RunSimulatedGeneratorDataAsync(device, cts.Token);
+            var generatorTask = RunSimulatedDataGeneratorAsync(device, cts.Token);
             Console.ReadLine();
             cts.Cancel();
             await generatorTask;
         }
 
-        private static async Task RunSimulatedGeneratorDataAsync(DeviceClient device, CancellationToken ct)
+        private static async Task RunSimulatedDataGeneratorAsync(DeviceClient device, CancellationToken ct)
         {
             var rand = new Random();
-
-            const int anomalyTimeinterval = 20;
-            var nextAnomalousEvent = DateTime.Now.AddSeconds(anomalyTimeinterval);
 
             while (!ct.IsCancellationRequested)
             {
@@ -46,17 +43,7 @@ namespace Generator.IoTMonitor
                     Pressure = rand.Next(9400,10500)/10f
                 };
 
-                if (nextAnomalousEvent < DateTime.Now)
-                {
-                    Console.WriteLine("**GENERATING ANOMALY**");
-                    measurement.Temperature = rand.Next(300, 350)/10f;
-                    measurement.Humidity = rand.Next(600, 1000)/10f;
-                    nextAnomalousEvent = DateTime.Now.AddSeconds(anomalyTimeinterval);
-                }
-                else
-                {
-                    Console.WriteLine("Sending measurement...");
-                }
+                Console.WriteLine("Sending measurement...");
 
                 await SendMessage(device, measurement);
 
